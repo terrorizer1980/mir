@@ -27,6 +27,7 @@
 #include <mutex>
 #include <memory>
 #include <deque>
+#include <thread>
 
 namespace mir
 {
@@ -35,13 +36,18 @@ namespace frontend
 class WaylandExecutor : public Executor
 {
 public:
-    explicit WaylandExecutor(wl_event_loop* loop);
+    explicit WaylandExecutor(wl_event_loop* loop, wl_display* display = nullptr);
+    explicit WaylandExecutor(wl_display* display);
     ~WaylandExecutor();
 
     void spawn(std::function<void()>&& work) override;
 
+    void start();
+
     class State;
 private:
+    wl_display* const display;
+    std::thread dispatch_thread;
     std::shared_ptr<State> state;
     mir::Fd const notify_fd;
     wl_event_source* const source;

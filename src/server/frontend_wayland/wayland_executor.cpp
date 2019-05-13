@@ -242,8 +242,9 @@ int mf::WaylandExecutor::State::on_notify(int fd, uint32_t, void* data)
 
 
 
-mf::WaylandExecutor::WaylandExecutor(wl_event_loop* loop)
-    : state{std::make_shared<State>(loop)},
+mf::WaylandExecutor::WaylandExecutor(wl_event_loop* loop, wl_display* display)
+    : display{display},
+      state{std::make_shared<State>(loop)},
       notify_fd{eventfd(0, EFD_CLOEXEC | EFD_SEMAPHORE | EFD_NONBLOCK)},
       source{wl_event_loop_add_fd(
           loop,
@@ -266,6 +267,11 @@ mf::WaylandExecutor::WaylandExecutor(wl_event_loop* loop)
     EventLoopDestroyedHandler::setup_destruction_handler_for_loop(loop, source, state);
 }
 
+mf::WaylandExecutor::WaylandExecutor(wl_display* display)
+    : WaylandExecutor(wl_display_get_event_loop(display), display)
+{
+}
+
 mf::WaylandExecutor::~WaylandExecutor()
 {
     /*
@@ -283,6 +289,11 @@ mf::WaylandExecutor::~WaylandExecutor()
      * T2: on_destroyed() unregisters the source, causing a double-free
      * T1: ~WaylandExecutor completes, dropping the ref on the work queue.
      */
+    if (dispatch_thread.joinable())
+    {
+        spawn([dpy = display]() { wl_display_terminate(dpy); });
+    }
+
     auto const raw_state = state.get();
     auto cleanup_functor =
         [state_holder = std::move(state), source = this->source]()
@@ -299,6 +310,11 @@ mf::WaylandExecutor::~WaylandExecutor()
             strerror(err),
             err);
     }
+
+    if (dispatch_thread.joinable())
+    {
+        dispatch_thread.join();
+    }
 }
 
 void mf::WaylandExecutor::spawn (std::function<void()>&& work)
@@ -312,3 +328,12 @@ void mf::WaylandExecutor::spawn (std::function<void()>&& work)
     }
 }
 
+void mf::WaylandExecutor::start()
+{
+    dispatch_thread = std::thread{
+        [dpy = display]()
+        {
+            wl_display_run(dpy);
+        }
+    };
+}
