@@ -224,7 +224,7 @@ if (WAYLAND_EGLSTREAM_FOUND)
     mesa-kms;mesa-x11;eglstream-kms
     CACHE
     STRING
-    "a list of graphics backends to build (options are 'mesa-kms', 'mesa-x11', or 'eglstream-kms')"
+    "a list of graphics backends to build (options are 'mesa-kms', 'mesa-x11', 'eglstream-kms', or 'rpi-vc4')"
   )
 else()
   set(
@@ -232,7 +232,7 @@ else()
     mesa-kms;mesa-x11
     CACHE
     STRING
-    "a list of graphics backends to build (options are 'mesa-kms', 'mesa-x11', or 'eglstream-kms')"
+    "a list of graphics backends to build (options are 'mesa-kms', 'mesa-x11', 'eglstream-kms', or 'rpi-vc4')"
   )
 endif()
 
@@ -260,6 +260,10 @@ foreach(platform IN LISTS MIR_PLATFORM)
         message(FATAL_ERROR "EGLStream platform requested, but required NVIDIA external EGL platform nvidia-egl-wayland not found")
      endif()
      set(MIR_BUILD_PLATFORM_EGLSTREAM_KMS TRUE)
+  endif()
+  if (platform STREQUAL "rpi-vc4")
+    set(MIR_BUILD_PLATFORM_RPI_VC4 TRUE)
+    pkg_check_modules(BCM_HOST REQUIRED bcm_host)
   endif()
 endforeach(platform)
 

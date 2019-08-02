@@ -16,10 +16,11 @@
  * Authored by: Alexandros Frantzis <alexandros.frantzis@canonical.com>
  */
 
-#include <algorithm>
 #include "real_kms_output_container.h"
-#include "real_kms_output.h"
 #include "kms-utils/drm_mode_resources.h"
+#include "real_kms_output.h"
+#include <algorithm>
+#include <experimental/optional>
 
 namespace mgm = mir::graphics::mesa;
 
@@ -41,12 +42,29 @@ void mgm::RealKMSOutputContainer::update_from_hardware_state()
 {
     decltype(outputs) new_outputs;
 
+    std::exception_ptr kms_exception;
     for (auto drm_fd : drm_fds)
     {
-        kms::DRMModeResources resources{drm_fd};
+        auto resources =
+            [](int drm_fd, std::exception_ptr& failure_reason)
+            {
+                try
+                {
+                    return std::make_unique<kms::DRMModeResources>(drm_fd);
+                }
+                catch (std::runtime_error const&)
+                {
+                    failure_reason = std::current_exception();
+                    return std::unique_ptr<kms::DRMModeResources>{};
+                }
+            }(drm_fd, kms_exception);
 
+        if (!resources)
+        {
+            break;
+        }
 
-        for (auto &&connector : resources.connectors())
+        for (auto &&connector : resources->connectors())
         {
             // Caution: O(n²) here, but n is the number of outputs, so should
             // conservatively be << 100.
@@ -79,5 +97,10 @@ void mgm::RealKMSOutputContainer::update_from_hardware_state()
         }
 
     }
+    if (new_outputs.empty() && kms_exception)
+    {
+        std::rethrow_exception(kms_exception);
+    }
+
     outputs = new_outputs;
 }

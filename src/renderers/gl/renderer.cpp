@@ -336,7 +336,7 @@ mrg::Renderer::Program::Program(GLuint program_id)
 
 mrg::Renderer::Renderer(graphics::DisplayBuffer& display_buffer)
     : render_target(&display_buffer),
-      clear_color{0.0f, 0.0f, 0.0f, 0.0f},
+      clear_color{0.0f, 0.0f, 0.0f, 1.0f},
       default_program(family.add_program(vshader, default_fshader)),
       alpha_program(family.add_program(vshader, alpha_fshader)),
       program_factory{std::make_unique<ProgramFactory>()},
@@ -352,6 +352,7 @@ mrg::Renderer::Renderer(graphics::DisplayBuffer& display_buffer)
             {EGL_VENDOR,      "EGL vendor"},
             {EGL_VERSION,     "EGL version"},
             {EGL_CLIENT_APIS, "EGL client APIs"},
+            {EGL_EXTENSIONS,  "EGL extensions"},
         };
         for (auto& s : eglstrings)
         {
@@ -366,6 +367,7 @@ mrg::Renderer::Renderer(graphics::DisplayBuffer& display_buffer)
         {GL_RENDERER, "GL renderer"},
         {GL_VERSION,  "GL version"},
         {GL_SHADING_LANGUAGE_VERSION,  "GLSL version"},
+        {GL_EXTENSIONS, "GL extensions"},
     };
 
     for (auto& s : glstrings)

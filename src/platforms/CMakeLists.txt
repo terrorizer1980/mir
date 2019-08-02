@@ -72,4 +72,8 @@ if (MIR_BUILD_PLATFORM_EGLSTREAM_KMS)
   add_subdirectory(eglstream-kms)
 endif()
 
+if (MIR_BUILD_PLATFORM_RPI_VC4)
+  add_subdirectory(rpi-vc4)
+endif()
+
 add_subdirectory(evdev/)
