@@ -22,7 +22,7 @@
 #include "buffer_allocator.h"
 #include "buffer_texture_binder.h"
 #include "mir/anonymous_shm_file.h"
-#include "shm_buffer.h"
+#include "mir/graphics/shm_buffer.h"
 #include "mir/graphics/buffer_properties.h"
 #include "mir/renderer/gl/context_source.h"
 #include "mir/renderer/gl/context.h"

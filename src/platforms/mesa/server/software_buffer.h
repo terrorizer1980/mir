@@ -19,7 +19,7 @@
 #ifndef MIR_GRAPHICS_MESA_SOFTWARE_BUFFER_H_
 #define MIR_GRAPHICS_MESA_SOFTWARE_BUFFER_H_
 
-#include "shm_buffer.h"
+#include "mir/graphics/shm_buffer.h"
 
 namespace mir
 {

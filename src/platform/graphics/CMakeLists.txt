@@ -22,6 +22,15 @@ set(
   program.cpp
   ${PROJECT_SOURCE_DIR}/include/platform/mir/graphics/program_factory.h
   program_factory.cpp
+  ${PROJECT_SOURCE_DIR}/include/platform/mir/graphics/shm_buffer.h
+  shm_buffer.cpp
+)
+
+set_source_files_properties(
+    ${GRAPHICS_SOURCES}
+        PROPERTIES
+            INCLUDE_DIRECTORIES
+            ${PROJECT_SOURCE_DIR}/include/renderers/gl
 )
 
 add_library(mirplatformgraphicscommon OBJECT

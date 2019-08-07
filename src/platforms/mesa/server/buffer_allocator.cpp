@@ -21,7 +21,7 @@
 #include "gbm_buffer.h"
 #include "buffer_texture_binder.h"
 #include "mir/anonymous_shm_file.h"
-#include "shm_buffer.h"
+#include "mir/graphics/shm_buffer.h"
 #include "display_helpers.h"
 #include "software_buffer.h"
 #include "gbm_format_conversions.h"
