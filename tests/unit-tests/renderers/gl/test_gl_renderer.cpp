@@ -170,7 +170,7 @@ TEST_F(GLRenderer, disables_blending_for_rgbx_surfaces)
     EXPECT_CALL(mock_gl, glDisable(GL_BLEND));
 
     mrg::Renderer renderer(display_buffer);
-    renderer.render(renderable_list);
+    renderer.render(std::move(renderable_list));
 }
 
 TEST_F(GLRenderer, enables_blending_for_rgba_surfaces)
@@ -180,7 +180,7 @@ TEST_F(GLRenderer, enables_blending_for_rgba_surfaces)
     EXPECT_CALL(mock_gl, glEnable(GL_BLEND));
 
     mrg::Renderer renderer(display_buffer);
-    renderer.render(renderable_list);
+    renderer.render(std::move(renderable_list));
 }
 
 TEST_F(GLRenderer, enables_blending_for_rgbx_translucent_surfaces)
@@ -191,7 +191,7 @@ TEST_F(GLRenderer, enables_blending_for_rgbx_translucent_surfaces)
     EXPECT_CALL(mock_gl, glEnable(GL_BLEND));
 
     mrg::Renderer renderer(display_buffer);
-    renderer.render(renderable_list);
+    renderer.render(std::move(renderable_list));
 }
 
 TEST_F(GLRenderer, uses_premultiplied_src_alpha_for_rgba_surfaces)
@@ -203,7 +203,7 @@ TEST_F(GLRenderer, uses_premultiplied_src_alpha_for_rgba_surfaces)
                                              GL_ONE, GL_ONE_MINUS_SRC_ALPHA));
 
     mrg::Renderer renderer(display_buffer);
-    renderer.render(renderable_list);
+    renderer.render(std::move(renderable_list));
 }
 
 TEST_F(GLRenderer, avoids_src_alpha_for_rgbx_blending)  // LP: #1423462
@@ -217,7 +217,7 @@ TEST_F(GLRenderer, avoids_src_alpha_for_rgbx_blending)  // LP: #1423462
                                     GL_ZERO, GL_ONE));
 
     mrg::Renderer renderer(display_buffer);
-    renderer.render(renderable_list);
+    renderer.render(std::move(renderable_list));
 }
 
 TEST_F(GLRenderer, clears_all_channels_zero)
@@ -229,7 +229,7 @@ TEST_F(GLRenderer, clears_all_channels_zero)
 
     mrg::Renderer renderer(display_buffer);
 
-    renderer.render(renderable_list);
+    renderer.render(std::move(renderable_list));
 }
 
 TEST_F(GLRenderer, makes_display_buffer_current_when_created)
@@ -264,7 +264,7 @@ TEST_F(GLRenderer, makes_display_buffer_current_before_deleting_programs)
     EXPECT_CALL(mock_gl, glDeleteShader(_)).Times(AtLeast(1)).InSequence(s2);
     EXPECT_CALL(mock_display_buffer, release_current()).InSequence(s1, s2);
 
-    renderer.render(renderable_list);
+    renderer.render(std::move(renderable_list));
 }
 
 TEST_F(GLRenderer, makes_display_buffer_current_before_rendering)
@@ -275,7 +275,7 @@ TEST_F(GLRenderer, makes_display_buffer_current_before_rendering)
     EXPECT_CALL(mock_display_buffer, make_current());
     EXPECT_CALL(mock_gl, glClear(_));
 
-    renderer.render(renderable_list);
+    renderer.render(std::move(renderable_list));
 
     testing::Mock::VerifyAndClearExpectations(&mock_display_buffer);
 }
@@ -288,7 +288,7 @@ TEST_F(GLRenderer, swaps_buffers_after_rendering)
     EXPECT_CALL(mock_gl, glDrawArrays(_, _, _)).Times(AnyNumber());
     EXPECT_CALL(mock_display_buffer, swap_buffers());
 
-    renderer.render(renderable_list);
+    renderer.render(std::move(renderable_list));
 }
 
 TEST_F(GLRenderer, sets_scissor_test)
@@ -301,7 +301,7 @@ TEST_F(GLRenderer, sets_scissor_test)
 
     mrg::Renderer renderer(display_buffer);
 
-    renderer.render(renderable_list);
+    renderer.render(std::move(renderable_list));
 }
 
 TEST_F(GLRenderer, dont_set_scissor_test_when_unnecessary)
@@ -312,7 +312,7 @@ TEST_F(GLRenderer, dont_set_scissor_test_when_unnecessary)
 
     mrg::Renderer renderer(display_buffer);
 
-    renderer.render(renderable_list);
+    renderer.render(std::move(renderable_list));
 }
 
 

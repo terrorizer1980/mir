@@ -423,7 +423,7 @@ void mrg::Renderer::tessellate(std::vector<mgl::Primitive>& primitives,
     primitives[0] = mgl::tessellate_renderable_into_rectangle(renderable, geom::Displacement{0,0});
 }
 
-void mrg::Renderer::render(mg::RenderableList const& renderables) const
+void mrg::Renderer::render(mg::RenderableList&& renderables) const
 {
     render_target.bind();
 
@@ -436,6 +436,8 @@ void mrg::Renderer::render(mg::RenderableList const& renderables) const
     {
         draw(*r);
     }
+    // We're done with the renderables. Make sure they're released back to the client
+    renderables.clear();
 
     render_target.swap_buffers();
 

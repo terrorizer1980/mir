@@ -75,29 +75,16 @@ void mc::DefaultDisplayBufferCompositor::composite(mc::SceneElementSequence&& sc
     if (display_buffer.overlay(renderable_list))
     {
         report->renderables_in_frame(this, renderable_list);
+        renderable_list.clear();
         renderer->suspend();
     }
     else
     {
         renderer->set_output_transform(display_buffer.transformation());
         renderer->set_viewport(view_area);
-        renderer->render(renderable_list);
-
         report->renderables_in_frame(this, renderable_list);
         report->rendered_frame(this);
-
-        /*
-         * This is used for the 'early release' optimization to release buffers
-         * we did use back to clients before starting on the potentially slow
-         * post() call.
-         * FIXME: This clear() call is blocking a little because we drive IPC
-         *        here (LP: #1395421). However if the early release
-         *        optimization is disabled or absent (LP: #1561418) then this
-         *        clear() doesn't contribute anything. In that case the
-         *        problematic IPC (LP: #1395421) will instead occur in buffer
-         *        acquisition calls when we composite the next frame.
-         */
-        renderable_list.clear();
+        renderer->render(std::move(renderable_list));
     }
 
     report->finished_frame(this);

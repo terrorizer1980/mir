@@ -124,7 +124,7 @@ public:
     {
     }
 
-    void render(mg::RenderableList const& renderables) const override
+    void render(mg::RenderableList&& renderables) const override
     {
         for (auto const& r : renderables)
         {

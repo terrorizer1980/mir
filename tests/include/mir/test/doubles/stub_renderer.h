@@ -37,7 +37,7 @@ public:
     void set_output_transform(glm::mat2 const&) override {}
     void suspend() override {}
 
-    void render(graphics::RenderableList const& renderables) const override
+    void render(graphics::RenderableList&& renderables) const override
     {
         for (auto const& r : renderables)
             r->buffer(); // We need to consume a buffer to unblock client tests
