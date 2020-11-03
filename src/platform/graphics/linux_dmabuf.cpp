@@ -17,7 +17,8 @@
  */
 
 
-#include "linux_dmabuf.h"
+#include "mir/graphics/linux_dmabuf.h"
+
 
 #include "wayland_wrapper.h"
 #include "mir/graphics/egl_extensions.h"
@@ -41,9 +42,9 @@
 #include <vector>
 #include <drm_fourcc.h>
 #include <wayland-server.h>
+#include <libdrm/drm_fourcc.h>
 
 namespace mg = mir::graphics;
-namespace mgg = mir::graphics::gbm;
 namespace mw = mir::wayland;
 namespace geom = mir::geometry;
 
@@ -684,7 +685,7 @@ bool format_is_simple_enough_for_us(uint32_t format)
     }
 }
 
-class mgg::DmaBufFormatDescriptors
+class mg::DmaBufFormatDescriptors
 {
 public:
     DmaBufFormatDescriptors(
@@ -828,7 +829,7 @@ private:
     std::vector<std::vector<EGLBoolean>> external_only_for_format;
 };
 
-class mgg::LinuxDmaBufUnstable::Instance : public mir::wayland::LinuxDmabufV1
+class mg::LinuxDmaBufUnstable::Instance : public mir::wayland::LinuxDmabufV1
 {
 public:
     Instance(
@@ -881,7 +882,7 @@ private:
     std::shared_ptr<EGLExtensions> const egl_extensions;
 };
 
-mgg::LinuxDmaBufUnstable::LinuxDmaBufUnstable(
+mg::LinuxDmaBufUnstable::LinuxDmaBufUnstable(
     wl_display* display,
     EGLDisplay dpy,
     std::shared_ptr<EGLExtensions> egl_extensions,
@@ -893,7 +894,7 @@ mgg::LinuxDmaBufUnstable::LinuxDmaBufUnstable(
 {
 }
 
-auto mgg::LinuxDmaBufUnstable::buffer_from_resource(
+auto mg::LinuxDmaBufUnstable::buffer_from_resource(
     wl_resource* buffer,
     std::shared_ptr<renderer::gl::Context> ctx,
     std::function<void()>&& on_consumed,
@@ -914,7 +915,7 @@ auto mgg::LinuxDmaBufUnstable::buffer_from_resource(
     return nullptr;
 }
 
-void mgg::LinuxDmaBufUnstable::bind(wl_resource* new_resource)
+void mg::LinuxDmaBufUnstable::bind(wl_resource* new_resource)
 {
     new LinuxDmaBufUnstable::Instance{new_resource, dpy, egl_extensions, *formats};
 }
