@@ -10,36 +10,28 @@ set(symbol_map ${CMAKE_CURRENT_SOURCE_DIR}/symbols.map)
 add_definitions(-DMIR_SERVER_PLATFORM_PATH="${MIR_SERVER_PLATFORM_PATH}")
 add_definitions(-DMIR_SERVER_GRAPHICS_PLATFORM_VERSION="${MIR_SERVER_GRAPHICS_PLATFORM_VERSION}")
 
-set(MIR_PLATFORM_OBJECTS
-  $<TARGET_OBJECTS:mirplatformgraphicscommon>
-  $<TARGET_OBJECTS:miroptions>
-  $<TARGET_OBJECTS:mirudev>
-)
-
-set(MIR_PLATFORM_REFERENCES
-  ${EGL_LDFLAGS} ${EGL_LIBRARIES}
-  ${GL_LDFLAGS} ${GL_LIBRARIES}
-)
-
 add_subdirectory(graphics/)
 add_subdirectory(options)
 add_subdirectory(udev)
 
+set(MIR_PLATFORM_OBJECTS mirudev miroptions mirplatformgraphicscommon)
 set(MIR_PLATFORM_OBJECTS ${MIR_PLATFORM_OBJECTS} PARENT_SCOPE)
-set(MIR_PLATFORM_REFERENCES ${MIR_PLATFORM_REFERENCES} PARENT_SCOPE)
 
 add_library(mirplatform SHARED
-  ${MIR_PLATFORM_OBJECTS}
-
   ${PROJECT_SOURCE_DIR}/include/platform/mir/input/input_sink.h
   ${PROJECT_SOURCE_DIR}/include/platform/mir/console_services.h
   ${PROJECT_SOURCE_DIR}/include/platform/mir/executor.h
 )
 
-target_link_libraries(mirplatform
+mir_add_object_libraries_to_target(
+  mirplatform
 
-  mircommon
-  ${MIR_PLATFORM_REFERENCES}
+  ${MIR_PLATFORM_OBJECTS}
+)
+
+target_link_libraries(mirplatform
+  PUBLIC
+    mircommon
 )
 
 set_target_properties(

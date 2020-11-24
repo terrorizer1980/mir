@@ -1,7 +1,4 @@
-include_directories(${GL_INCLUDE_DIRS})
-
-set(
-  GRAPHICS_SOURCES
+add_library(mirplatformgraphicscommon OBJECT
 
   egl_extensions.cpp
   egl_resources.cpp
@@ -10,6 +7,7 @@ set(
   gamma_curves.cpp
   buffer_basic.cpp
   pixel_format_utils.cpp
+  ${PROJECT_SOURCE_DIR}/src/include/platform/mir/graphics/pixel_format_utils.h
   overlapping_output_grouping.cpp
   atomic_frame.cpp
   ${PROJECT_SOURCE_DIR}/include/platform/mir/graphics/display.h
@@ -28,16 +26,23 @@ set(
   ${PROJECT_SOURCE_DIR}/include/platform/mir/graphics/dmabuf_buffer.h
 )
 
-add_library(mirplatformgraphicscommon OBJECT
-
-  ${GRAPHICS_SOURCES}
-)
-
 target_include_directories(
   mirplatformgraphicscommon
 
+  PUBLIC
+    ${CMAKE_CURRENT_BINARY_DIR}
   PRIVATE
-  ${PROJECT_SOURCE_DIR}/include/renderers/gl
+    ${DRM_INCLUDE_DIRS}
+    ${PROJECT_SOURCE_DIR}/include/renderers/gl
+)
+
+target_link_libraries(
+  mirplatformgraphicscommon
+
+  PUBLIC
+    mirwayland
+    PkgConfig::EGL
+    PkgConfig::GLESv2
 )
 
 set(symbol_map ${CMAKE_CURRENT_SOURCE_DIR}/symbols.map)
