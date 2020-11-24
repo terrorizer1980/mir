@@ -17,6 +17,7 @@
  */
 
 #include "mir/renderer/sw/pixel_source.h"
+#include "mir/graphics/texture.h"
 
 #include <algorithm>
 #include <boost/throw_exception.hpp>
@@ -24,6 +25,8 @@
 #include <memory>
 #include <mir/graphics/graphic_buffer_allocator.h>
 #include <stdexcept>
+#include <EGL/egl.h>
+#include <GLES2/gl2.h>
 
 namespace mg = mir::graphics;
 namespace mrs = mir::renderer::software;
@@ -179,6 +182,72 @@ auto mrs::as_read_mappable_buffer(
         return std::make_shared<CopyingWrapper>(
             std::make_shared<PixelSourceAdaptor>(buffer));
 
+    }
+    else if (dynamic_cast<mg::gl::Texture*>(buffer->native_buffer_base()))
+    {
+        if (eglGetCurrentContext() == EGL_NO_CONTEXT)
+        {
+            BOOST_THROW_EXCEPTION((std::runtime_error{"Attempt to access GL buffer without current EGL context"}));
+        }
+
+        class TextureAdaptor : public ReadTransferableBuffer
+        {
+        public:
+            explicit TextureAdaptor(std::shared_ptr<mg::Buffer> buffer)
+                : buffer{std::move(buffer)}
+            {
+                if (!dynamic_cast<mg::gl::Texture*>(this->buffer->native_buffer_base()))
+                {
+                    BOOST_THROW_EXCEPTION((
+                                              std::logic_error{
+                                                  "Attempt to create a TextureAdapter from non-Texture buffer!"}));
+                }
+            }
+
+            auto format() const -> MirPixelFormat override
+            {
+                return mir_pixel_format_argb_8888;
+            }
+
+            auto stride() const -> geom::Stride override
+            {
+                return geom::Stride{size().width.as_uint32_t() * 4};
+            }
+
+            auto size() const -> geom::Size override
+            {
+                return buffer->size();
+            }
+
+            void transfer_from_buffer(unsigned char* destination) const override
+            {
+                auto& tex = dynamic_cast<mg::gl::Texture&>(*buffer->native_buffer_base());
+
+                tex.bind();
+                GLint tex_id;
+                glGetIntegerv(GL_TEXTURE_BINDING_2D, &tex_id);
+
+                GLuint fbo;
+                glGenFramebuffers(1, &fbo);
+                glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+                glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex_id, 0);
+
+                glReadPixels(
+                    0, 0,
+                    size().width.as_uint32_t(), size().height.as_uint32_t(),
+                    GL_RGBA,
+                    GL_UNSIGNED_BYTE,
+                    destination);
+
+                glBindFramebuffer(GL_FRAMEBUFFER, 0);
+                glDeleteFramebuffers(1, &fbo);
+            }
+
+        private:
+            std::shared_ptr<mg::Buffer> const buffer;
+        };
+
+        return std::make_shared<CopyingWrapper>(std::make_shared<TextureAdaptor>(std::move(buffer)));
     }
 
     BOOST_THROW_EXCEPTION((std::runtime_error{"Buffer does not support CPU access"}));
