@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e
+set -xe
 
 if [ -z "${RELEASE}" ]; then
   echo "ERROR: RELEASE environment variable needs to be set to the" >&2
@@ -141,4 +141,4 @@ dpkg-buildpackage \
     -i"^.git|^build" \
     -d -S
 
-dput ${TARGET_PPA} ../mir_${PPA_VERSION}_source.changes
+#dput ${TARGET_PPA} ../mir_${PPA_VERSION}_source.changes
