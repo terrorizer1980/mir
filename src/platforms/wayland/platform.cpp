@@ -53,3 +53,9 @@ mir::UniqueModulePtr<mg::GraphicBufferAllocator> mgw::RenderingPlatform::create_
     return mir::make_module_ptr<mgw::BufferAllocator>(output);
 }
 
+auto mgw::RenderingPlatform::maybe_create_interface(
+    RendererInterfaceBase::Tag const& /*type_tag*/) -> RendererInterfaceBase*
+{
+    return nullptr;
+}
+

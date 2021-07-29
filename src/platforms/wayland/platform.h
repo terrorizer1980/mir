@@ -56,6 +56,9 @@ class RenderingPlatform : public graphics::RenderingPlatform
 {
 public:
     auto create_buffer_allocator(Display const& output) -> UniqueModulePtr<GraphicBufferAllocator> override;
+
+protected:
+    auto maybe_create_interface(RendererInterfaceBase::Tag const& type_tag) -> RendererInterfaceBase* override;
 };
 }
 }

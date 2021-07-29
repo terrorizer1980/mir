@@ -124,6 +124,12 @@ mir::UniqueModulePtr<mg::GraphicBufferAllocator> mgx::RenderingPlatform::create_
     return make_module_ptr<mgx::BufferAllocator>(output);
 }
 
+auto mgx::RenderingPlatform::maybe_create_interface(RendererInterfaceBase::Tag const& /*type_tag*/)
+    -> mg::RendererInterfaceBase*
+{
+    return nullptr;
+}
+
 mir::UniqueModulePtr<mg::Display> mgx::Platform::create_display(
     std::shared_ptr<DisplayConfigurationPolicy> const& initial_conf_policy,
     std::shared_ptr<GLConfig> const& gl_config)
