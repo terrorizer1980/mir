@@ -50,7 +50,8 @@ namespace
 class StubRendererFactory : public mir::renderer::RendererFactory
 {
 public:
-    std::unique_ptr<mir::renderer::Renderer> create_renderer_for(mg::DisplayBuffer&)
+    auto create_renderer_for(mg::DisplayBuffer&, std::shared_ptr<mg::RenderingPlatform> /*platform*/)
+        -> std::unique_ptr<mir::renderer::Renderer>
     {
         return std::unique_ptr<mir::renderer::Renderer>(new mtd::StubRenderer());
     }

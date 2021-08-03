@@ -30,6 +30,7 @@
 #include "mir/graphics/texture.h"
 #include "mir/graphics/program_factory.h"
 #include "mir/graphics/program.h"
+#include "mir/graphics/platform.h"
 
 #define GLM_FORCE_RADIANS
 #include <glm/gtc/matrix_transform.hpp>
@@ -304,11 +305,14 @@ mrg::Renderer::Program::Program(GLuint program_id)
     alpha_uniform = glGetUniformLocation(id, "alpha");
 }
 
-mrg::Renderer::Renderer(graphics::DisplayBuffer& display_buffer)
+mrg::Renderer::Renderer(
+    graphics::DisplayBuffer& display_buffer,
+    std::shared_ptr<graphics::GLRenderingProvider> gl_interface)
     : render_target(&display_buffer),
       clear_color{0.0f, 0.0f, 0.0f, 0.0f},
       program_factory{std::make_unique<ProgramFactory>()},
-      display_transform(1)
+      display_transform(1),
+      gl_interface{std::move(gl_interface)}
 {
     eglBindAPI(EGL_OPENGL_ES_API);
     EGLDisplay disp = eglGetCurrentDisplay();
@@ -412,12 +416,7 @@ void mrg::Renderer::draw(mg::Renderable const& renderable) const
         );
     }
 
-    auto const texture = std::dynamic_pointer_cast<mg::gl::Texture>(renderable.buffer());
-    if (!texture)
-    {
-        mir::log_error("Buffer does not support GL rendering!");
-        return;
-    }
+    auto const texture = gl_interface->as_texture(renderable.buffer());
 
     auto const& prog =
         [this, &texture](bool alpha) -> Program const&

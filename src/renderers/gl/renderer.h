@@ -34,7 +34,7 @@
 namespace mir
 {
 namespace gl { class TextureCache; }
-namespace graphics { class DisplayBuffer; }
+namespace graphics { class DisplayBuffer; class GLRenderingProvider; }
 namespace renderer
 {
 namespace gl
@@ -57,7 +57,7 @@ private:
 class Renderer : public renderer::Renderer
 {
 public:
-    Renderer(graphics::DisplayBuffer& display_buffer);
+    Renderer(graphics::DisplayBuffer& display_buffer, std::shared_ptr<graphics::GLRenderingProvider> gl_interface);
     virtual ~Renderer();
 
     // These are called with a valid GL context:
@@ -125,6 +125,7 @@ private:
     glm::mat4 screen_to_gl_coords;
     glm::mat4 display_transform;
     std::vector<mir::gl::Primitive> mutable primitives;
+    std::shared_ptr<graphics::GLRenderingProvider> const gl_interface;
 };
 
 }

@@ -20,6 +20,7 @@
 #include "mir/renderer/renderer_factory.h"
 #include "mir/renderer/renderer.h"
 #include "mir/graphics/display_buffer.h"
+#include "mir/graphics/platform.h"
 
 #include "default_display_buffer_compositor.h"
 
@@ -28,8 +29,10 @@ namespace mg = mir::graphics;
 
 mc::DefaultDisplayBufferCompositorFactory::DefaultDisplayBufferCompositorFactory(
     std::shared_ptr<mir::renderer::RendererFactory> const& renderer_factory,
+    std::shared_ptr<mg::RenderingPlatform> const& platform,
     std::shared_ptr<mc::CompositorReport> const& report) :
     renderer_factory{renderer_factory},
+    rendering_platform{platform},
     report{report}
 {
 }
@@ -38,7 +41,7 @@ std::unique_ptr<mc::DisplayBufferCompositor>
 mc::DefaultDisplayBufferCompositorFactory::create_compositor_for(
     mg::DisplayBuffer& display_buffer)
 {
-    auto renderer = renderer_factory->create_renderer_for(display_buffer);
+    auto renderer = renderer_factory->create_renderer_for(display_buffer, rendering_platform);
     return std::make_unique<DefaultDisplayBufferCompositor>(
-         display_buffer, std::move(renderer), report);
+        display_buffer, std::move(renderer), report);
 }

@@ -52,7 +52,7 @@ public:
         create_buffer_allocator(Display const& output) override;
 
 protected:
-    auto maybe_create_interface(RendererInterfaceBase::Tag const& type_tag) -> RendererInterfaceBase* override;
+    auto maybe_create_interface(RendererInterfaceBase::Tag const& type_tag) -> std::shared_ptr<RendererInterfaceBase> override;
 };
 
 class DisplayPlatform : public graphics::DisplayPlatform

@@ -26,6 +26,7 @@ namespace mir
 namespace graphics
 {
 struct DisplayBuffer;
+class RenderingPlatform;
 }
 namespace renderer
 {
@@ -37,7 +38,9 @@ class RendererFactory
 public:
     virtual ~RendererFactory() = default;
 
-    virtual std::unique_ptr<Renderer> create_renderer_for(graphics::DisplayBuffer& display_buffer) = 0;
+    virtual auto create_renderer_for(
+        graphics::DisplayBuffer& display_buffer,
+        std::shared_ptr<graphics::RenderingPlatform> platform) -> std::unique_ptr<Renderer> = 0;
 
 protected:
     RendererFactory() = default;

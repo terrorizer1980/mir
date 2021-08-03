@@ -67,7 +67,7 @@ class RenderingPlatform : public graphics::RenderingPlatform
         graphics::Display const& output) -> UniqueModulePtr<graphics::GraphicBufferAllocator> override;
 
 protected:
-    auto maybe_create_interface(RendererInterfaceBase::Tag const& type_tag) -> RendererInterfaceBase* override;
+    auto maybe_create_interface(RendererInterfaceBase::Tag const& type_tag) -> std::shared_ptr<RendererInterfaceBase> override;
 };
 
 }
