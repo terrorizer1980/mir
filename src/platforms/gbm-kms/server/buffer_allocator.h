@@ -24,6 +24,7 @@
 #include "mir/graphics/buffer_id.h"
 #include "mir_toolkit/mir_native_buffer.h"
 #include "mir/graphics/linux_dmabuf.h"
+#include "mir/graphics/platform.h"
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic warning "-Wall"
@@ -91,6 +92,11 @@ private:
     bool egl_display_bound{false};
 };
 
+class GLRenderingProvider : public graphics::GLRenderingProvider
+{
+public:
+    auto as_texture(std::shared_ptr<Buffer> buffer) -> std::shared_ptr<gl::Texture> override;
+};
 }
 }
 }

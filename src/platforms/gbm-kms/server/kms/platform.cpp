@@ -69,8 +69,12 @@ mir::UniqueModulePtr<mg::GraphicBufferAllocator> mgg::RenderingPlatform::create_
 }
 
 auto mgg::RenderingPlatform::maybe_create_interface(
-    RendererInterfaceBase::Tag const& /*type_tag*/) -> std::shared_ptr<RendererInterfaceBase>
+    RendererInterfaceBase::Tag const& type_tag) -> std::shared_ptr<RendererInterfaceBase>
 {
+    if (dynamic_cast<GLRenderingProvider::Tag const*>(&type_tag))
+    {
+        return std::make_shared<mgg::GLRenderingProvider>();
+    }
     return nullptr;
 }
 
