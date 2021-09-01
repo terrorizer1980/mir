@@ -79,6 +79,19 @@ jobs:
         sudo apt-get install --yes binfmt-support qemu-user-static
         echo "LXD_DIR=/var/snap/lxd/common/lxd" >> $GITHUB_ENV
 
+    - name: Set up CCache
+      id: setup-ccache
+      run: |
+        sudo apt-get install ccache
+        ccache --max-size=1.2G  # a fresh build yielded 1.1GB of cache
+        /snap/bin/lxc profile device add default ccache disk source=${HOME}/.ccache/ path=/root/.ccache
+
+    - name: CCache
+      uses: actions/cache@v2
+      with:
+        key: ccache-${{ matrix.spread-task }}
+        path: ~/.ccache/**
+
     - name: Check out code
       uses: actions/checkout@v2
 
@@ -86,6 +99,9 @@ jobs:
       run: |
         snap run spread -v ${{ matrix.spread-task }}
       continue-on-error: ${{ matrix.allow-fail }}
+
+    - name: Clear CCache stats
+      run: ccache --show-stats --zero-stats
 
   # Report result to Bors on `staging` and `trying` branches.
   Bors:
