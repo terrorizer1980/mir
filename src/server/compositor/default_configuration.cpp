@@ -24,6 +24,7 @@
 #include "multi_threaded_compositor.h"
 #include "gl/renderer_factory.h"
 #include "mir/main_loop.h"
+#include "mir/graphics/platform.h"
 
 #include "mir/options/configuration.h"
 
@@ -32,6 +33,7 @@
 namespace mc = mir::compositor;
 namespace ms = mir::scene;
 namespace mf = mir::frontend;
+namespace mg = mir::graphics;
 
 std::shared_ptr<ms::BufferStreamFactory>
 mir::DefaultServerConfiguration::the_buffer_stream_factory()
@@ -49,8 +51,13 @@ mir::DefaultServerConfiguration::the_display_buffer_compositor_factory()
     return display_buffer_compositor_factory(
         [this]()
         {
-            return wrap_display_buffer_compositor_factory(std::make_shared<mc::DefaultDisplayBufferCompositorFactory>(
-                the_renderer_factory(), the_rendering_platforms().front(), the_compositor_report()));
+            auto rendering_platform = the_rendering_platforms().front();
+            if (auto gl_provider = mg::RenderingPlatform::acquire_interface<mg::GLRenderingProvider>(std::move(rendering_platform)))
+            {
+                return wrap_display_buffer_compositor_factory(std::make_shared<mc::DefaultDisplayBufferCompositorFactory>(
+                    std::move(gl_provider), the_renderer_factory(), the_compositor_report()));
+            }
+            BOOST_THROW_EXCEPTION((std::runtime_error{"Selected rendering platform does not support GL"}));
         });
 }
 

@@ -22,6 +22,7 @@
 #include "mir/graphics/graphic_buffer_allocator.h"
 #include "mir/graphics/buffer_id.h"
 #include "mir/graphics/egl_extensions.h"
+#include "mir/graphics/platform.h"
 #include "egl_context_executor.h"
 
 #include "wayland-eglstream-controller.h"
@@ -91,6 +92,14 @@ private:
     std::shared_ptr<common::EGLContextExecutor> const egl_delegate;
     std::unique_ptr<gl::Program> shader;
     static struct wl_eglstream_controller_interface const impl;
+};
+
+class GLRenderingProvider : public graphics::GLRenderingProvider
+{
+public:
+    auto as_texture(std::shared_ptr<Buffer> buffer) -> std::shared_ptr<gl::Texture> override;
+
+    auto surface_for_output(DisplayBuffer& db) -> std::unique_ptr<gl::OutputSurface> override;
 };
 
 }
