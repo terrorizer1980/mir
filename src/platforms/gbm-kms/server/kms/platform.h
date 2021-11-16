@@ -56,6 +56,11 @@ public:
     std::shared_ptr<DisplayReport> const listener;
     std::shared_ptr<ConsoleServices> const vt;
 
+protected:
+    auto maybe_create_interface(DisplayInterfaceBase::Tag const& type_tag)
+        -> std::shared_ptr<DisplayInterfaceBase> override;
+
+public:
     BypassOption bypass_option() const;
 private:
     BypassOption const bypass_option_;
@@ -63,11 +68,19 @@ private:
 
 class RenderingPlatform : public graphics::RenderingPlatform
 {
+public:
+    RenderingPlatform() = default;
+
     auto create_buffer_allocator(
-        graphics::Display const& output) -> UniqueModulePtr<graphics::GraphicBufferAllocator> override;
+        graphics::Display const&) -> UniqueModulePtr<graphics::GraphicBufferAllocator> override;
 
 protected:
-    auto maybe_create_interface(RendererInterfaceBase::Tag const& type_tag) -> std::shared_ptr<RendererInterfaceBase> override;
+    auto maybe_create_interface(
+        std::shared_ptr<GraphicBufferAllocator> const& device,
+        RendererInterfaceBase::Tag const& type_tag) -> std::shared_ptr<RendererInterfaceBase> override;
+
+private:
+
 };
 
 }

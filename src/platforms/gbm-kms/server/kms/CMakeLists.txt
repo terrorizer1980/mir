@@ -44,7 +44,7 @@ add_library(
   mutex.h
   quirks.cpp
   quirks.h
-)
+  kms_framebuffer.h kms_framebuffer.cpp dumb_fb.cpp dumb_fb.h)
 
 target_link_libraries(
   mirplatformgraphicsgbmkmsobjects

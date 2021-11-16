@@ -43,7 +43,6 @@ namespace X
 
 class DisplayBuffer : public graphics::DisplayBuffer,
                       public graphics::DisplaySyncGroup,
-                      public graphics::NativeDisplayBuffer,
                       public renderer::gl::RenderTarget
 {
 public:
@@ -72,7 +71,6 @@ public:
     std::chrono::milliseconds recommended_sleep() const override;
 
     glm::mat2 transformation() const override;
-    NativeDisplayBuffer* native_display_buffer() override;
 
 private:
     std::shared_ptr<DisplayReport> const report;

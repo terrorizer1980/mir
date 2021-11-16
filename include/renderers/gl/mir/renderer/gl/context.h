@@ -19,6 +19,8 @@
 #ifndef MIR_RENDERER_GL_CONTEXT_H_
 #define MIR_RENDERER_GL_CONTEXT_H_
 
+#include <memory>
+
 namespace mir
 {
 namespace renderer
@@ -33,6 +35,11 @@ public:
 
     virtual void make_current() const = 0;
     virtual void release_current() const = 0;
+
+    /**
+     * Create an EGL context that shares this context's sharable-data
+     */
+    virtual auto make_share_context() const -> std::unique_ptr<Context> = 0;
 
 protected:
     Context() = default;

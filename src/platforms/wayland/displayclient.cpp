@@ -39,7 +39,6 @@ namespace mgw = mir::graphics::wayland;
 class mgw::DisplayClient::Output  :
     public DisplaySyncGroup,
     public renderer::gl::RenderTarget,
-    public NativeDisplayBuffer,
     public DisplayBuffer
 {
 public:
@@ -85,7 +84,7 @@ public:
     static wl_output_listener const output_listener;
 
     wl_output* const output;
-    DisplayClient const* const owner;
+    DisplayClient const* const wayland_client;
 
     wl_surface* const surface;
     wl_shell_surface* window{nullptr};
@@ -104,7 +103,7 @@ public:
     auto view_area() const -> geometry::Rectangle override;
     bool overlay(RenderableList const& renderlist) override;
     auto transformation() const -> glm::mat2 override;
-    auto native_display_buffer() -> NativeDisplayBuffer* override;
+    auto owner() const -> std::shared_ptr<DisplayPlatform> override;
 
     // RenderTarget implementation
     void make_current() override;
@@ -236,7 +235,7 @@ mgw::DisplayClient::Output::Output(
     std::function<void(Output const&)> on_constructed,
     std::function<void(Output const&)> on_change) :
     output{output},
-    owner{owner},
+    wayland_client{owner},
     surface{wl_compositor_create_surface(owner->compositor)},
     on_done{[this, on_constructed = std::move(on_constructed), on_change=std::move(on_change)]
         (Output const& o) mutable { on_constructed(o), on_done = std::move(on_change); }}
@@ -268,10 +267,10 @@ mgw::DisplayClient::Output::~Output()
     wl_surface_destroy(surface);
 
     if (eglsurface != EGL_NO_SURFACE)
-        eglDestroySurface(owner->egldisplay, eglsurface);
+        eglDestroySurface(wayland_client->egldisplay, eglsurface);
 
     if (eglctx != EGL_NO_CONTEXT)
-        eglDestroyContext(owner->egldisplay, eglctx);
+        eglDestroyContext(wayland_client->egldisplay, eglctx);
 }
 
 wl_output_listener const mgw::DisplayClient::Output::output_listener = {
@@ -297,17 +296,17 @@ void mgw::DisplayClient::Output::for_each_display_buffer(std::function<void(Disp
             [](void*, wl_shell_surface*){}
         };
 
-        window = wl_shell_get_shell_surface(owner->shell, surface);
+        window = wl_shell_get_shell_surface(wayland_client->shell, surface);
         wl_shell_surface_add_listener(window, &shell_surface_listener, this);
         wl_shell_surface_set_fullscreen(window, WL_SHELL_SURFACE_FULLSCREEN_METHOD_SCALE, 0, output);
         wl_surface_set_buffer_scale(surface, round(dcout.scale));
-        wl_display_dispatch(owner->display);
+        wl_display_dispatch(wayland_client->display);
 
         auto const& size = dcout.modes[dcout.current_mode_index].size;
 
         eglsurface = eglCreatePlatformWindowSurface(
-            owner->egldisplay,
-            owner->eglconfig,
+            wayland_client->egldisplay,
+            wayland_client->eglconfig,
             wl_egl_window_create(surface, size.width.as_int(), size.height.as_int()), nullptr);
     }
 
@@ -338,23 +337,23 @@ auto mgw::DisplayClient::Output::transformation() const -> glm::mat2
     return glm::mat2{1};
 }
 
-auto mgw::DisplayClient::Output::native_display_buffer() -> NativeDisplayBuffer*
+auto mgw::DisplayClient::Output::owner() const -> std::shared_ptr<DisplayPlatform>
 {
-    return this;
+
 }
 
 void mgw::DisplayClient::Output::make_current()
 {
     if (eglctx == EGL_NO_CONTEXT)
-        eglctx = eglCreateContext(owner->egldisplay, owner->eglconfig, owner->eglctx, ctxattribs);
+        eglctx = eglCreateContext(wayland_client->egldisplay, wayland_client->eglconfig, wayland_client->eglctx, ctxattribs);
 
-    if (!eglMakeCurrent(owner->egldisplay, eglsurface, eglsurface, eglctx))
+    if (!eglMakeCurrent(wayland_client->egldisplay, eglsurface, eglsurface, eglctx))
         BOOST_THROW_EXCEPTION(egl_error("Can't eglMakeCurrent"));
 }
 
 void mgw::DisplayClient::Output::release_current()
 {
-    eglMakeCurrent(owner->egldisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+    eglMakeCurrent(wayland_client->egldisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
 }
 
 void mgw::DisplayClient::Output::swap_buffers()
@@ -400,9 +399,9 @@ void mgw::DisplayClient::Output::swap_buffers()
 
     // Avoid throttling compositing by blocking in eglSwapBuffers().
     // Instead we use the frame "done" notification.
-    eglSwapInterval(owner->egldisplay, 0);
+    eglSwapInterval(wayland_client->egldisplay, 0);
 
-    if (eglSwapBuffers(owner->egldisplay, eglsurface) != EGL_TRUE)
+    if (eglSwapBuffers(wayland_client->egldisplay, eglsurface) != EGL_TRUE)
         BOOST_THROW_EXCEPTION(egl_error("Failed to perform buffer swap"));
 
     frame_sync.wait_for_done();

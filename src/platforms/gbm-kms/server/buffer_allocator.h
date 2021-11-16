@@ -64,6 +64,8 @@ enum class BufferImportMethod
     dma_buf
 };
 
+class GLRenderingProvider;
+
 class BufferAllocator:
     public graphics::GraphicBufferAllocator
 {
@@ -83,6 +85,8 @@ public:
         wl_resource* buffer,
         std::shared_ptr<Executor> wayland_executor,
         std::function<void()>&& on_consumed) -> std::shared_ptr<Buffer> override;
+
+    auto shared_egl_context() -> std::shared_ptr<renderer::gl::Context>;
 private:
     std::shared_ptr<renderer::gl::Context> const ctx;
     std::shared_ptr<common::EGLContextExecutor> const egl_delegate;
@@ -95,9 +99,17 @@ private:
 class GLRenderingProvider : public graphics::GLRenderingProvider
 {
 public:
+    GLRenderingProvider(std::shared_ptr<renderer::gl::Context> ctx);
+
+    auto make_framebuffer_provider(DisplayBuffer const& target)
+        -> std::unique_ptr<FramebufferProvider> override;
+
     auto as_texture(std::shared_ptr<Buffer> buffer) -> std::shared_ptr<gl::Texture> override;
 
     auto surface_for_output(DisplayBuffer& db) -> std::unique_ptr<gl::OutputSurface> override;
+
+private:
+    std::shared_ptr<renderer::gl::Context> const ctx;
 };
 }
 }

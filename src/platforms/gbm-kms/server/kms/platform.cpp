@@ -26,11 +26,14 @@
 #include "mir/renderer/gl/texture_target.h"
 #include "mir/graphics/buffer_basic.h"
 #include "mir/graphics/egl_error.h"
+#include "kms_framebuffer.h"
 
 #include <EGL/egl.h>
 #include <EGL/eglext.h>
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
+
+#include <xf86drmMode.h>
 
 #define MIR_LOG_COMPONENT "platform-graphics-gbm-kms"
 #include "mir/log.h"
@@ -62,6 +65,8 @@ mgg::Platform::Platform(std::shared_ptr<DisplayReport> const& listener,
 {
 }
 
+
+
 mir::UniqueModulePtr<mg::GraphicBufferAllocator> mgg::RenderingPlatform::create_buffer_allocator(
     mg::Display const& output)
 {
@@ -69,11 +74,13 @@ mir::UniqueModulePtr<mg::GraphicBufferAllocator> mgg::RenderingPlatform::create_
 }
 
 auto mgg::RenderingPlatform::maybe_create_interface(
+    std::shared_ptr<GraphicBufferAllocator> const& device,
     RendererInterfaceBase::Tag const& type_tag) -> std::shared_ptr<RendererInterfaceBase>
 {
     if (dynamic_cast<GLRenderingProvider::Tag const*>(&type_tag))
     {
-        return std::make_shared<mgg::GLRenderingProvider>();
+        auto ctx = std::dynamic_pointer_cast<BufferAllocator>(device)->shared_egl_context();
+        return std::make_shared<mgg::GLRenderingProvider>(std::move(ctx));
     }
     return nullptr;
 }
@@ -82,6 +89,7 @@ mir::UniqueModulePtr<mg::Display> mgg::Platform::create_display(
     std::shared_ptr<DisplayConfigurationPolicy> const& initial_conf_policy, std::shared_ptr<GLConfig> const& gl_config)
 {
     return make_module_ptr<mgg::Display>(
+        shared_from_this(),
         drm,
         gbm,
         vt,
@@ -94,4 +102,14 @@ mir::UniqueModulePtr<mg::Display> mgg::Platform::create_display(
 mgg::BypassOption mgg::Platform::bypass_option() const
 {
     return bypass_option_;
+}
+
+auto mgg::Platform::maybe_create_interface(DisplayInterfaceBase::Tag const& type_tag)
+    -> std::shared_ptr<DisplayInterfaceBase>
+{
+    if (dynamic_cast<DumbDisplayProvider::Tag const*>(&type_tag))
+    {
+        return std::make_shared<mgg::DumbDisplayProvider>(drm.back()->fd);
+    }
+    return {};
 }
