@@ -109,7 +109,7 @@ auto mgg::Platform::maybe_create_interface(DisplayInterfaceBase::Tag const& type
 {
     if (dynamic_cast<DumbDisplayProvider::Tag const*>(&type_tag))
     {
-        return std::make_shared<mgg::DumbDisplayProvider>(drm.back()->fd);
+        return std::make_shared<mgg::DumbDisplayProvider>();
     }
     return {};
 }
